@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我们的恋爱空间</title>
+    <style>
+        /* ========== CSS变量定义 - 统一配色方案 ========== */
+        :root {
+            --primary: #ff9a76;        /* 主色调：暖橙色 */
+            --secondary: #ffc246;      /* 辅色调：金黄色 */
+            --bg: #fff8f0;            /* 背景色：米白色 */
+            --card: #ffffff;          /* 卡片背景：纯白 */
+            --text: #5a4a3a;          /* 文字色：深褐色 */
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);  /* 统一阴影 */
+            --sand-top: linear-gradient(135deg, #ffc246, #ff9a76); /* 上层沙子渐变 */
+            --sand-bottom: linear-gradient(135deg, #ff9a76, #e67e22); /* 下层沙子渐变 */
+            --sand-light: #f4d03f;    /* 浅沙色 */
+            --sand-dark: #d35400;     /* 深沙色 */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ========== 基础样式 ========== */
+        body {
+            font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;  /* 移除移动端点击高亮 */
+        }
+
+        /* ========== 导航栏模块 ==========
+           功能：页面顶部导航，固定定位
+           特点：黄浅色渐变 + 毛玻璃效果 + 分割线 */
+        nav {
+            background: linear-gradient(135deg, rgba(255, 241, 200, 0.85) 0%, rgba(255, 180, 100, 0.9) 100%);
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(255, 160, 80, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 200, 150, 0.3);
+            backdrop-filter: blur(10px);  /* 毛玻璃效果 */
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo {
+            color: #8b5a2b;
+            font-size: 22px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        }
+
+        /* 导航链接组 - 使用flex布局 */
+        .nav-links {
+            display: flex;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #7a4a2a;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-right: 1px solid rgba(180, 120, 80, 0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        .nav-links a:last-child {
+            border-right: none;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255, 200, 120, 0.4);
+            border-radius: 20px;
+            color: #5a3a1a;
+        }
+
+        /* ========== 主内容区域 ==========
+           功能：承载所有页面内容
+           特点：居中布局，最大宽度限制 */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 15px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* 页面切换基础样式 */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 激活的页面显示 */
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========== 首页 - 祝福气泡模块 ==========
+           功能：随机显示祝福语，自动弹出消失
+           特点：绝对定位，随机位置，暖色系 */
+        .home-content {
+            position: relative;
+            min-height: 60vh;
+            padding: 20px;
+            overflow: hidden;  /* 防止气泡溢出 */
+        }
+
+        /* 单个气泡样式 */
+        .blessing-bubble {
+            position: absolute;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            animation: bubblePop 0.4s ease-out, bubbleFade 3s ease-in 1.5s forwards;
+            pointer-events: none;  /* 不阻挡点击 */
+            max-width: 280px;
+            text-align: center;
+            line-height: 1.5;
+            z-index: 10;
+            word-break: break-all;  /* 移动端换行 */
+        }
+
+        /* 气泡弹出动画 */
+        @keyframes bubblePop {
+            0% { opacity: 0; transform: scale(0) translateY(30px); }
+            60% { transform: scale(1.15) translateY(-8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 气泡消失动画 */
+        @keyframes bubbleFade {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.7) translateY(-40px); }
+        }
+
+        /* ========== 小确幸按钮模块 ==========
+           功能：打开祝福语管理弹窗
+           位置：固定左下角 */
+        .xiaoquexing-btn {
+            position: fixed;
+            bottom: 90px;
+            left: 20px;
+            background: linear-gradient(135deg, #ffd93d, #ff9a76);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 154, 118, 0.3);
+            transition: all 0.3s;
+            z-index: 50;
+            white-space: nowrap;
+        }
+
+        .xiaoquexing-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* ========== 右下角双爱心动画模块 ==========
+           功能：装饰性动画，表达爱意
+           特点：两颗相同爱心，大小不同，追赶动画 + 参照线段 */
+        .hearts-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 50px;
+            z-index: 50;
+            pointer-events: none;  /* 不阻挡点击 */
+        }
+
+        /* 向左移动的参照线段 */
+        .track {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 2px;
+            background: repeating-linear-gradient(
+                to right,
+                #ff9a76 0px,
+                #ff9a76 25px,
+                transparent 25px,
+                transparent 45px
+            );
+            animation: trackMove 1.4s linear infinite;
+        }
+
+        @keyframes trackMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-45px); }
+        }
+
+        /* 爱心基础样式 */
+        .heart {
+            position: absolute;
+            bottom: 5px;
+            color: #ff7b6b;
+            animation: heartChase 1.4s ease-in-out infinite;
+            filter: drop-shadow(0 2px 4px rgba(255, 123, 107, 0.3));
+        }
+
+        /* 大爱心 - 领跑者 */
+        .heart.leader {
+            font-size: 30px;
+            left: 10px;
+            animation-delay: 0s;
+        }
+
+        /* 小爱心 - 追赶者（延迟0.35秒产生追赶效果） */
+        .heart.chaser {
+            font-size: 20px;
+            left: 10px;
+            animation-delay: 0.35s;
+            opacity: 0.9;
+        }
+
+        /* 爱心追赶跳动动画 */
+        @keyframes heartChase {
+            0% { transform: translateX(0) translateY(0) scale(1); }
+            25% { transform: translateX(30px) translateY(-18px) scale(1.12); }
+            50% { transform: translateX(55px) translateY(0) scale(1); }
+            75% { transform: translateX(30px) translateY(-10px) scale(1.06); }
+            100% { transform: translateX(0) translateY(0) scale(1); }
+        }
+
+        /* ========== 弹窗模块 ==========
+           功能：管理祝福语（增删）
+           特点：居中显示，遮罩层，滚动支持 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .blessing-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 16px;  /* 移动端防止缩放 */
+            -webkit-appearance: none;
+        }
+
+        .blessing-list {
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .blessing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .blessing-item button {
+            background: #ff9a76;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 13px;
+            flex-shrink: 0;  /* 防止按钮被压缩 */
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 24px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        /* ========== 首页计时器模块 ========== */
+        .home-footer {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .timer-display {
+            font-size: 28px;
+            color: var(--primary);
+            font-weight: bold;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+
+        .timer-display.unknown {
+            color: #999;
+            font-size: 18px;
+        }
+
+        /* ========== 日记模块（带删除功能） ==========
+           功能：写日记、查看历史、删除日记
+           存储：localStorage */
+        .diary-section {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .date-picker {
+            margin-bottom: 20px;
+        }
+
+        .date-picker label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .date-picker input {
+            padding: 12px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+            -webkit-appearance: none;
+        }
+
+        .diary-input {
+            width: 100%;
+            min-height: 180px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            -webkit-appearance: none;
+        }
+
+        .save-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .diary-list {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .diary-item {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 15px;
+            border-left: 4px solid var(--primary);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .diary-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .diary-date {
+            color: var(--secondary);
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ff5252;
+            transform: scale(1.05);
+        }
+
+        /* ========== 照片模块（带删除功能） ==========
+           功能：上传照片、随机展示、删除照片
+           注意：使用base64存储，不适合大量高清图 */
+        .photo-section {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .upload-area {
+            border: 3px dashed var(--primary);
+            border-radius: 20px;
+            padding: 35px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 154, 118, 0.02);
+        }
+
+        .upload-area:hover {
+            background: rgba(255, 154, 118, 0.08);
+            border-color: #ff7b6b;
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        /* 照片网格布局 - 自适应列数 */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            aspect-ratio: 1;
+            background: #f0f0f0;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+            display: block;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .photo-date {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .photo-delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        /* ========== 沙漏模块（已修复底部堆积问题） ==========
+           功能：展示恋爱时长，可视化时间流逝
+           特点：
+           1. 透明沙漏外框
+           2. 自动翻转时长随相恋总时长增加而增加
+           3. 上方沙堆明显减少，下方沙堆明显增多
+           4. 沙子不穿模
+           5. 自动翻转功能
+           6. 已修复：沙子落到沙漏瓶底部 */
+
+        .hourglass-section {
+            background: var(--card);
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 沙漏主体容器 - 透明外框 */
+        .hourglass-wrapper {
+            position: relative;
+            width: 180px;
+            height: 270px;
+            filter: drop-shadow(0 10px 20px rgba(255, 154, 118, 0.2));
+        }
+
+        /* SVG沙漏外框 - 透明设计 */
+        .hourglass-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+        }
+
+        /* 核心改进：沙漏形状裁剪容器 - 防止沙子穿模 */
+        .sand-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            /* 使用SVG路径作为裁剪路径，确保沙子不穿模 */
+            clip-path: path('M20,20 Q90,20 160,20 L110,130 Q105,135 110,140 L160,250 Q90,250 20,250 L70,140 Q75,135 70,130 Z');
+            overflow: hidden;
+        }
+
+        /* 上层沙子容器 - 倒三角形状 */
+        .upper-sand {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 50%; /* 从中间开始 */
+            overflow: hidden;
+            /* 倒三角形 */
+            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+            border-radius: 2px 2px 0 0;
+        }
+
+        /* 上层沙子填充 - 使用网站渐变配色 */
+        .upper-sand-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--sand-top);
+            transition: height 0.5s ease-out;
+            box-shadow: inset 0 4px 8px rgba(255, 154, 118, 0.3);
+        }
+
+        /* 下层沙子容器 - 已修复：确保沙子落到沙漏瓶底部 */
+        .lower-sand {
+            position: absolute;
+            top: 50%; /* 从中间开始 */
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            overflow: hidden;
+            /* 正三角形 - 确保沙子从底部开始堆积 */
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            border-radius: 0 0 2px 2px;
+        }
+
+        /* 下层沙子填充 - 已修复：沙子从底部开始堆积 */
+        .lower-sand-fill {
+            position: absolute;
+            bottom: 0; /* 从底部开始 */
+            left: 0;
+            width: 100%;
+            background: var(--sand-bottom);
+            transition: height 0.5s ease-out;
+            box-shadow: inset 0 -4px 8px rgba(255, 154, 118, 0.3);
+        }
+
+        /* 沙流效果 - 网站主色调 */
+        .sand-stream {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 50px;
+            background: linear-gradient(to bottom,
+                rgba(255, 194, 70, 0) 0%,
+                var(--secondary) 20%,
+                var(--primary) 50%,
+                var(--secondary) 80%,
+                rgba(255, 194, 70, 0) 100%);
+            border-radius: 2px;
+            z-index: 15;
+            animation: streamFlow 0.8s infinite;
+        }
+
+        @keyframes streamFlow {
+            0%, 100% {
+                opacity: 0.7;
+                transform: translate(-50%, -50%) scaleY(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scaleY(1.1);
+            }
+        }
+
+        /* 下落沙粒动画 - 网站配色 */
+        .falling-sands {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 50px;
+            z-index: 12;
+            pointer-events: none;
+        }
+
+        .grain {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--secondary);
+            border-radius: 50%;
+            animation: grainFall 0.7s ease-out infinite;
+            box-shadow: 0 0 4px var(--primary);
+        }
+
+        @keyframes grainFall {
+            0% {
+                opacity: 0.8;
+                transform: translateY(-25px) translateX(0) scale(0.8);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(25px) translateX(var(--drift, 0px)) scale(1.2);
+            }
+        }
+
+        /* 沙漏翻转动画 - 更平滑的视觉效果 */
+        .hourglass-wrapper.flipping {
+            animation: flipHourglass 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes flipHourglass {
+            0% {
+                transform: rotate(0deg) scale(1);
+                filter: drop-shadow(0 10px 20px rgba(255, 154, 118, 0.2));
+            }
+            25% {
+                transform: rotate(45deg) scale(0.97);
+                filter: drop-shadow(0 15px 25px rgba(255, 154, 118, 0.3));
+            }
+            50% {
+                transform: rotate(180deg) scale(0.95);
+                filter: drop-shadow(0 20px 30px rgba(255, 154, 118, 0.4));
+            }
+            75% {
+                transform: rotate(315deg) scale(0.97);
+                filter: drop-shadow(0 15px 25px rgba(255, 154, 118, 0.3));
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+                filter: drop-shadow(0 10px 20px rgba(255, 154, 118, 0.2));
+            }
+        }
+
+        /* 翻转时的光效 */
+        .flip-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 154, 118, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            z-index: 5;
+        }
+
+        .hourglass-wrapper.flipping .flip-glow {
+            animation: glowPulse 1.2s ease-in-out;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* 时间显示区域 - 与网站风格统一 */
+        .time-display {
+            flex: 1;
+            min-width: 280px;
+            text-align: center;
+        }
+
+        .time-display h2 {
+            color: var(--primary);
+            margin-bottom: 25px;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(255, 154, 118, 0.1);
+        }
+
+        /* 时间单位卡片 - 使用网站配色 */
+        .time-unit {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 5px;
+            text-align: center;
+            min-width: 70px;
+            box-shadow: 0 4px 15px rgba(255, 154, 118, 0.3);
+            transition: all 0.3s;
+        }
+
+        .time-unit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 154, 118, 0.4);
+        }
+
+        .time-unit .number {
+            font-size: 32px;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+
+        .time-unit .label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* 日期选择器 - 统一风格 */
+        .start-date-picker {
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .start-date-picker label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .start-date-picker input {
+            padding: 12px;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 280px;
+            -webkit-appearance: none;
+            background: rgba(255, 154, 118, 0.05);
+            transition: all 0.3s;
+        }
+
+        .start-date-picker input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(255, 154, 118, 0.2);
+        }
+
+        /* 翻转按钮 - 网站风格 */
+        .flip-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 154, 118, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flip-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 154, 118, 0.4);
+        }
+
+        .flip-btn:active {
+            transform: translateY(0);
+        }
+
+        .flip-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+
+        .flip-btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0) translate(-50%, -50%);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20) translate(-50%, -50%);
+                opacity: 0;
+            }
+        }
+
+        /* 沙漏状态提示 */
+        .hourglass-status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--primary);
+            min-height: 20px;
+        }
+
+        .flip-duration-display {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--secondary);
+        }
+
+        /* ========== 移动端适配 ==========
+           针对小屏幕设备的样式调整 */
+        @media (max-width: 768px) {
+            /* 导航栏适配 */
+            nav {
+                padding: 12px 15px;
+            }
+
+            .logo {
+                font-size: 18px;
+            }
+
+            .nav-links a {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            /* 主内容区适配 */
+            main {
+                padding: 20px 12px;
+            }
+
+            /* 祝福气泡适配 */
+            .blessing-bubble {
+                max-width: 220px;
+                font-size: 14px;
+                padding: 10px 16px;
+            }
+
+            /* 小确幸按钮适配 */
+            .xiaoquexing-btn {
+                bottom: 80px;
+                left: 15px;
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+
+            /* 爱心动画适配 */
+            .hearts-container {
+                right: 10px;
+                bottom: 15px;
+                width: 90px;
+                height: 45px;
+            }
+
+            .heart.leader {
+                font-size: 26px;
+            }
+
+            .heart.chaser {
+                font-size: 18px;
+            }
+
+            /* 计时器适配 */
+            .timer-display {
+                font-size: 22px;
+            }
+
+            .time-unit {
+                padding: 12px 15px;
+                min-width: 60px;
+                margin: 3px;
+            }
+
+            .time-unit .number {
+                font-size: 26px;
+            }
+
+            .time-unit .label {
+                font-size: 12px;
+            }
+
+            /* 沙漏适配 */
+            .hourglass-section {
+                flex-direction: column;
+                gap: 30px;
+                padding: 25px 15px;
+            }
+
+            .hourglass-wrapper {
+                width: 150px;
+                height: 225px;
+            }
+
+            /* 调整沙漏裁剪路径 */
+            .sand-container {
+                clip-path: path('M15,15 Q75,15 135,15 L90,110 Q85,115 90,120 L135,210 Q75,210 15,210 L60,120 Q65,115 60,110 Z');
+            }
+
+            .upper-sand, .lower-sand {
+                left: 15px;
+                right: 15px;
+            }
+
+            .upper-sand {
+                top: 15px;
+            }
+
+            .lower-sand {
+                bottom: 15px;
+            }
+
+            .time-display h2 {
+                font-size: 20px;
+            }
+
+            /* 日记和照片模块适配 */
+            .diary-section, .photo-section {
+                padding: 20px 15px;
+            }
+
+            .diary-input {
+                min-height: 150px;
+                font-size: 16px;  /* 防止iOS缩放 */
+            }
+
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 10px;
+            }
+
+            .save-btn {
+                width: 100%;
+                max-width: none;
+            }
+
+            /* 弹窗适配 */
+            .modal {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .modal h3 {
+                font-size: 18px;
+            }
+        }
+
+        /* 超小屏幕适配 */
+        @media (max-width: 380px) {
+            .nav-links a {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+
+            .time-unit {
+                padding: 10px 12px;
+                min-width: 55px;
+            }
+
+            .time-unit .number {
+                font-size: 22px;
+            }
+
+            .hourglass-wrapper {
+                width: 130px;
+                height: 195px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== 导航栏 ========== -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">💕 我们的恋爱空间</div>
+            <div class="nav-links">
+                <a onclick="showPage('home')" class="active" id="nav-home">首页</a>
+                <a onclick="showPage('road')" id="nav-road">我们的路</a>
+                <a onclick="showPage('time')" id="nav-time">我们的时光</a>
+                <a onclick="showPage('hourglass')" id="nav-hourglass">沙漏</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== 主内容区 ========== -->
+    <main>
+        <!-- 首页：祝福气泡 + 计时器 -->
+        <div id="page-home" class="page active">
+            <div class="home-content" id="bubble-container"></div>
+            <div class="home-footer">
+                <p>我们已经在一起</p>
+                <div class="timer-display unknown" id="home-timer">我们何时开始呢？</div>
+            </div>
+        </div>
+
+        <!-- 我们的路：日记功能 -->
+        <div id="page-road" class="page">
+            <div class="diary-section">
+                <h2 style="color: var(--primary); margin-bottom: 20px;">📝 记录我们的每一天</h2>
+                <div class="date-picker">
+                    <label>选择日期</label>
+                    <input type="date" id="diary-date">
+                </div>
+                <textarea class="diary-input" id="diary-content" placeholder="今天发生了什么美好的事..."></textarea>
+                <button class="save-btn" onclick="saveDiary()">保存日记</button>
+                <div class="diary-list" id="diary-list"></div>
+            </div>
+        </div>
+
+        <!-- 我们的时光：照片功能 -->
+        <div id="page-time" class="page">
+            <div class="photo-section">
+                <h2 style="color: var(--primary); margin-bottom: 20px;">📸 定格美好瞬间</h2>
+                <div class="date-picker" style="margin-bottom: 15px;">
+                    <label>照片日期</label>
+                    <input type="date" id="photo-date">
+                </div>
+                <div class="upload-area" onclick="document.getElementById('photo-input').click()">
+                    <input type="file" id="photo-input" accept="image/*" onchange="uploadPhoto(this)">
+                    <p style="font-size: 48px; margin-bottom: 10px;">📷</p>
+                    <p>点击或拖拽上传照片</p>
+                </div>
+                <div class="photo-gallery" id="photo-gallery"></div>
+            </div>
+        </div>
+
+        <!-- 沙漏：恋爱计时可视化（透明+动态翻转时长） -->
+        <div id="page-hourglass" class="page">
+            <div class="hourglass-section">
+                <div class="hourglass-wrapper" id="hourglass">
+                    <!-- 翻转光效 -->
+                    <div class="flip-glow"></div>
+
+                    <!-- SVG沙漏外框 - 透明设计 -->
+                    <svg class="hourglass-svg" viewBox="0 0 180 270" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <!-- 玻璃光泽渐变 - 透明设计 -->
+                            <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:rgba(255,255,255,0.1)" />
+                                <stop offset="50%" style="stop-color:rgba(255,255,255,0.05)" />
+                                <stop offset="100%" style="stop-color:rgba(255,255,255,0.1)" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- 沙漏玻璃外框 - 圆角设计，透明 -->
+                        <path d="M20,20 Q90,20 160,20 L110,130 Q105,135 110,140 L160,250 Q90,250 20,250 L70,140 Q75,135 70,130 Z"
+                              fill="url(#glassGradient)"
+                              stroke="var(--primary)"
+                              stroke-width="2.5"
+                              stroke-opacity="0.4"/>
+                    </svg>
+
+                    <!-- 改进的沙子容器 -->
+                    <div class="sand-container">
+                        <!-- 上层沙子 -->
+                        <div class="upper-sand">
+                            <div class="upper-sand-fill" id="upper-sand-fill"></div>
+                        </div>
+
+                        <!-- 沙流 -->
+                        <div class="sand-stream"></div>
+
+                        <!-- 下落沙粒 -->
+                        <div class="falling-sands" id="falling-sands"></div>
+
+                        <!-- 下层沙子 - 已修复：沙子落到沙漏瓶底部 -->
+                        <div class="lower-sand">
+                            <div class="lower-sand-fill" id="lower-sand-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间显示 -->
+                <div class="time-display">
+                    <h2>⏳ 我们的爱情计时</h2>
+                    <div id="time-counter">
+                        <div class="time-unit">
+                            <span class="number" id="days">0</span>
+                            <span class="label">天</span>
+                        </div>
+                        <div class="time-unit">
+                            <span class="number" id="hours">0</span>
+                            <span class="label">小时</span>
+                        </div>
+                        <div class="time-unit">
+                            <span class="number" id="minutes">0</span>
+                            <span class="label">分钟</span>
+                        </div>
+                        <div class="time-unit">
+                            <span class="number" id="seconds">0</span>
+                            <span class="label">秒</span>
+                        </div>
+                    </div>
+
+                    <div class="start-date-picker">
+                        <label>恋爱开始日期</label>
+                        <input type="date" id="start-date" onchange="setStartDate(this.value)">
+                    </div>
+
+                    <div class="hourglass-status" id="hourglass-status">沙漏正在流动中...</div>
+                    <div class="flip-duration-display" id="flip-duration-display">当前翻转周期：30秒</div>
+                    <button class="flip-btn" onclick="manualFlip()">手动翻转沙漏</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========== 小确幸按钮（固定左下角）========== -->
+    <button class="xiaoquexing-btn" onclick="openXiaoquexing()">✨ 小确幸</button>
+
+    <!-- ========== 右下角双爱心动画 ========== -->
+    <div class="hearts-container">
+        <div class="track"></div>
+        <span class="heart leader">❤️</span>
+        <span class="heart chaser">❤️</span>
+    </div>
+
+    <!-- ========== 小确幸弹窗 ========== -->
+    <div class="modal-overlay" id="xiaoquexing-modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3>✨ 管理你的小确幸</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">添加你想看到的祝福语</p>
+
+            <input type="text"
+                   class="blessing-input"
+                   id="new-blessing"
+                   placeholder="输入新的祝福语..."
+                   maxlength="50"
+                   onkeypress="if(event.key==='Enter') addBlessing()">
+
+            <button class="btn-primary" onclick="addBlessing()" style="width: 100%; margin-bottom: 20px;">添加</button>
+
+            <div class="blessing-list" id="blessing-list"></div>
+
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeXiaoquexing()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== JavaScript 功能模块 ========== -->
+    <script>
+        /**
+         * 数据存储模块
+         * 使用 localStorage 持久化存储所有数据
+         * 包括：恋爱日期、日记、照片、自定义祝福语
+         */
+        const Storage = {
+            // 恋爱开始日期
+            getStartDate() {
+                return localStorage.getItem('loveStartDate');
+            },
+            setStartDate(date) {
+                localStorage.setItem('loveStartDate', date);
+            },
+
+            // 日记数据
+            getDiaries() {
+                return JSON.parse(localStorage.getItem('diaries') || '[]');
+            },
+            saveDiary(diary) {
+                const diaries = this.getDiaries();
+                diaries.push({...diary, id: Date.now()});
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+            },
+            deleteDiary(index) {
+                const diaries = this.getDiaries();
+                diaries.splice(index, 1);
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+            },
+
+            // 照片数据（base64存储）
+            getPhotos() {
+                return JSON.parse(localStorage.getItem('photos') || '[]');
+            },
+            savePhoto(photo) {
+                const photos = this.getPhotos();
+                photos.push({...photo, id: Date.now()});
+                localStorage.setItem('photos', JSON.stringify(photos));
+            },
+            deletePhoto(index) {
+                const photos = this.getPhotos();
+                photos.splice(index, 1);
+                localStorage.setItem('photos', JSON.stringify(photos));
+            },
+
+            // 祝福语数据
+            getBlessings() {
+                const defaults = [
+                    "愿有岁月可回首，且以深情共白头 💕",
+                    "你是我今生最美的遇见 ✨",
+                    "每一天醒来，想到你就充满力量 🌅",
+                    "世界很大，幸好有你 🌍",
+                    "喜欢你，是我做过最对的事 💝",
+                    "想和你一起，把平凡的日子过成诗 📜",
+                    "你的笑容，是我见过最美的风景 🌸",
+                    "时光不老，我们不散 ⏳",
+                    "愿余生都是你，余生都有你 🥰",
+                    "遇见你之后，我再也没羡慕过别人 💫"
+                ];
+                const saved = localStorage.getItem('customBlessings');
+                return saved ? JSON.parse(saved) : defaults;
+            },
+            saveBlessings(list) {
+                localStorage.setItem('customBlessings', JSON.stringify(list));
+            }
+        };
+
+        /**
+         * 页面导航模块
+         * 切换不同功能页面，控制气泡动画启停
+         */
+        function showPage(pageName) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // 显示目标页面
+            document.getElementById(`page-${pageName}`).classList.add('active');
+
+            // 更新导航高亮
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            document.getElementById(`nav-${pageName}`).classList.add('active');
+
+            // 页面特定初始化
+            if (pageName === 'road') loadDiaries();
+            if (pageName === 'time') loadPhotos();
+            if (pageName === 'home') startBubbles();
+            else stopBubbles();
+
+            // 滚动到顶部
+            window.scrollTo(0, 0);
+        }
+
+        /**
+         * 祝福气泡系统
+         * 特点：随机位置、随机颜色、自动弹出消失
+         */
+        const warmColors = [
+            '#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7',
+            '#C7CEEA', '#F8B195', '#F67280', '#C06C84', '#FF6B9D',
+            '#FFC93C', '#FF9F43', '#FF6B6B', '#F9CA24', '#A8E6CF'
+        ];
+
+        let bubbleInterval;
+        let isPageActive = true;
+
+        // 获取随机位置（避免边缘）
+        function getRandomPosition() {
+            const container = document.getElementById('bubble-container');
+            const rect = container.getBoundingClientRect();
+            const w = Math.max(rect.width - 300, 100);
+            const h = Math.max(rect.height - 100, 100);
+            return {
+                left: Math.random() * w + 20,
+                top: Math.random() * h + 20
+            };
+        }
+
+        // 创建单个气泡
+        function createBubble() {
+            const blessings = Storage.getBlessings();
+            if (!blessings.length || !isPageActive) return;
+
+            const container = document.getElementById('bubble-container');
+            const bubble = document.createElement('div');
+            const pos = getRandomPosition();
+            const color = warmColors[Math.floor(Math.random() * warmColors.length)];
+            const text = blessings[Math.floor(Math.random() * blessings.length)];
+
+            bubble.className = 'blessing-bubble';
+            bubble.style.left = pos.left + 'px';
+            bubble.style.top = pos.top + 'px';
+            bubble.style.background = color;
+            bubble.style.color = '#333';
+            bubble.textContent = text;
+
+            container.appendChild(bubble);
+
+            // 4.5秒后移除
+            setTimeout(() => {
+                if (bubble.parentNode) bubble.remove();
+            }, 4500);
+        }
+
+        // 启动气泡系统
+        function startBubbles() {
+            isPageActive = true;
+            // 立即创建2-4个
+            const initial = 2 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < initial; i++) {
+                setTimeout(createBubble, i * 400);
+            }
+
+            // 持续创建（间隔1.5-2.5秒）
+            bubbleInterval = setInterval(() => {
+                const count = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < count; i++) {
+                    setTimeout(createBubble, i * 300);
+                }
+            }, 1500 + Math.random() * 1000);
+        }
+
+        // 停止气泡系统
+        function stopBubbles() {
+            isPageActive = false;
+            clearInterval(bubbleInterval);
+            const container = document.getElementById('bubble-container');
+            if (container) container.innerHTML = '';
+        }
+
+        /**
+         * 小确幸管理模块
+         * 增删改查自定义祝福语
+         */
+        function openXiaoquexing() {
+            document.getElementById('xiaoquexing-modal').classList.add('active');
+            loadBlessingList();
+            // 聚焦输入框
+            setTimeout(() => document.getElementById('new-blessing').focus(), 100);
+        }
+
+        function closeXiaoquexing() {
+            document.getElementById('xiaoquexing-modal').classList.remove('active');
+        }
+
+        // 点击遮罩关闭弹窗
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeXiaoquexing();
+            }
+        }
+
+        function loadBlessingList() {
+            const blessings = Storage.getBlessings();
+            const container = document.getElementById('blessing-list');
+            container.innerHTML = blessings.map((b, i) => `
+                <div class="blessing-item">
+                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${b}</span>
+                    <button onclick="deleteBlessing(${i})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function addBlessing() {
+            const input = document.getElementById('new-blessing');
+            const text = input.value.trim();
+            if (!text) {
+                alert('请输入内容哦');
+                return;
+            }
+            const blessings = Storage.getBlessings();
+            blessings.push(text);
+            Storage.saveBlessings(blessings);
+            input.value = '';
+            loadBlessingList();
+        }
+
+        function deleteBlessing(i) {
+            const blessings = Storage.getBlessings();
+            blessings.splice(i, 1);
+            Storage.saveBlessings(blessings);
+            loadBlessingList();
+        }
+
+        /**
+         * 计时器模块
+         * 首页和沙漏页共用
+         */
+        function updateHomeTimer() {
+            const startDate = Storage.getStartDate();
+            const el = document.getElementById('home-timer');
+
+            if (!startDate) {
+                el.innerHTML = '我们何时开始呢？';
+                el.classList.add('unknown');
+                return;
+            }
+
+            el.classList.remove('unknown');
+            const diff = Date.now() - new Date(startDate);
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+
+            el.innerHTML = `${d}天 ${h}小时 ${m}分 ${s}秒`;
+        }
+
+        /**
+         * 日记模块
+         * 支持：写日记、查看列表、删除日记
+         */
+        // 设置默认日期为今天
+        document.getElementById('diary-date').valueAsDate = new Date();
+
+        function saveDiary() {
+            const date = document.getElementById('diary-date').value;
+            const content = document.getElementById('diary-content').value.trim();
+
+            if (!date || !content) {
+                alert('请填写日期和内容哦');
+                return;
+            }
+
+            Storage.saveDiary({ date, content });
+            document.getElementById('diary-content').value = '';
+            loadDiaries();
+            alert('日记保存成功！📖');
+        }
+
+        function deleteDiaryItem(index) {
+            if (confirm('确定要删除这篇日记吗？删除后无法恢复哦')) {
+                Storage.deleteDiary(index);
+                loadDiaries();
+            }
+        }
+
+        function loadDiaries() {
+            const diaries = Storage.getDiaries().sort((a, b) => b.timestamp - a.timestamp);
+            const container = document.getElementById('diary-list');
+
+            if (!diaries.length) {
+                container.innerHTML = '<p style="text-align:center;color:#999; padding: 40px 0;">还没有日记，写第一篇吧 ✍️</p>';
+                return;
+            }
+
+            container.innerHTML = diaries.map((d, index) => `
+                <div class="diary-item">
+                    <div class="diary-date">
+                        <span>📅 ${d.date}</span>
+                        <button class="delete-btn" onclick="deleteDiaryItem(${index})">删除</button>
+                    </div>
+                    <div style="line-height: 1.6; color: #444;">${d.content.replace(/\n/g, '<br>')}</div>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * 照片模块
+         * 支持：上传（base64）、随机展示、删除
+         * 注意：base64不适合大量高清图，建议后续接入图床
+         */
+        document.getElementById('photo-date').valueAsDate = new Date();
+
+        function uploadPhoto(input) {
+            const file = input.files[0];
+            const date = document.getElementById('photo-date').value;
+
+            if (!file || !date) {
+                alert('请选择照片和日期哦');
+                return;
+            }
+
+            // 限制文件大小（2MB）
+            if (file.size > 2 * 1024 * 1024) {
+                alert('照片太大啦，请选择2MB以内的图片');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                Storage.savePhoto({ src: e.target.result, date });
+                loadPhotos();
+                alert('照片上传成功！📸');
+            };
+            reader.onerror = () => alert('读取照片失败，请重试');
+            reader.readAsDataURL(file);
+
+            // 清空input，允许重复选择同一文件
+            input.value = '';
+        }
+
+        function deletePhotoItem(index) {
+            if (confirm('确定要删除这张照片吗？删除后无法恢复哦')) {
+                Storage.deletePhoto(index);
+                loadPhotos();
+            }
+        }
+
+        function loadPhotos() {
+            const photos = Storage.getPhotos().sort((a, b) => b.timestamp - a.timestamp);
+            const container = document.getElementById('photo-gallery');
+
+            if (!photos.length) {
+                container.innerHTML = '<p style="text-align:center;color:#999; grid-column:1/-1; padding: 40px 0;">还没有照片，上传第一张吧 📷</p>';
+                return;
+            }
+
+            // 随机排序展示
+            const shuffled = [...photos].sort(() => Math.random() - 0.5);
+
+            container.innerHTML = shuffled.map((p, index) => `
+                <div class="photo-item">
+                    <img src="${p.src}" alt="美好回忆" loading="lazy">
+                    <div class="photo-date">
+                        <span>📅 ${p.date}</span>
+                        <button class="photo-delete-btn" onclick="deletePhotoItem(${photos.indexOf(p)})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /**
+         * 沙漏模块（透明+动态翻转时长）
+         * 核心功能：可视化展示恋爱时长
+         * 特点：
+         * 1. 沙漏外框透明
+         * 2. 自动翻转时长随相恋总时长增加而增加
+         * 3. 上方沙堆明显减少，下方沙堆明显增多
+         * 4. 沙子不穿模
+         * 5. 自动翻转功能
+         * 6. 已修复：沙子落到沙漏瓶底部
+         */
+        let isFlipping = false;
+        let flipTimeout = null;
+        let upperSandPercent = 100; // 上层沙子百分比
+        let lowerSandPercent = 0;   // 下层沙子百分比
+        let flipCount = 0;          // 翻转次数
+        let currentFlipDuration = 30; // 当前翻转周期（秒）- 初始30秒
+
+        // 初始化沙漏
+        function initHourglass() {
+            const savedDate = Storage.getStartDate();
+            if (savedDate) {
+                document.getElementById('start-date').value = savedDate;
+                // 计算初始翻转时长
+                calculateFlipDuration();
+            }
+
+            // 初始更新
+            updateHourglassDisplay();
+
+            // 创建沙粒动画
+            createFallingGrains();
+
+            // 每秒更新一次沙漏
+            setInterval(updateHourglassDisplay, 1000);
+
+            // 每0.5秒创建新的沙粒
+            setInterval(createFallingGrains, 500);
+        }
+
+        // 计算翻转时长（秒）
+        function calculateFlipDuration() {
+            const startDate = Storage.getStartDate();
+            if (!startDate) {
+                currentFlipDuration = 30; // 默认30秒
+                return;
+            }
+
+            const startTime = new Date(startDate).getTime();
+            const now = Date.now();
+            const diffMs = now - startTime;
+
+            // 计算相恋月数（按30天一个月计算）
+            const days = diffMs / (1000 * 60 * 60 * 24);
+            const months = Math.floor(days / 30);
+
+            // 翻转时长 = 初始30秒 + 每增加一个月增加30秒
+            currentFlipDuration = 30 + (months * 30);
+
+            // 显示翻转时长
+            document.getElementById('flip-duration-display').textContent =
+                `当前翻转周期：${currentFlipDuration}秒`;
+        }
+
+        // 计算沙子体积变化
+        function calculateSandVolumes() {
+            const startDate = Storage.getStartDate();
+            if (!startDate) return { upper: 100, lower: 0 };
+
+            const startTime = new Date(startDate).getTime();
+            const now = Date.now();
+            const totalTime = now - startTime;
+
+            // 计算当前翻转周期内的进度
+            const flipDurationMs = currentFlipDuration * 1000; // 转换为毫秒
+            const cycleProgress = (totalTime % flipDurationMs) / flipDurationMs; // 0-1之间的进度
+
+            // 上层沙子从100%减少到0%
+            let upper = 100 - (cycleProgress * 100);
+            // 下层沙子从0%增加到100%
+            let lower = cycleProgress * 100;
+
+            // 确保总和为100%
+            upper = Math.max(0, Math.min(100, upper));
+            lower = Math.max(0, Math.min(100, lower));
+
+            return { upper, lower };
+        }
+
+        // 更新沙漏显示
+        function updateHourglassDisplay() {
+            if (isFlipping) return;
+
+            // 重新计算翻转时长（因为相恋时间在增加）
+            calculateFlipDuration();
+
+            const volumes = calculateSandVolumes();
+            const upperFill = document.getElementById('upper-sand-fill');
+            const lowerFill = document.getElementById('lower-sand-fill');
+            const statusEl = document.getElementById('hourglass-status');
+
+            // 更新沙子高度
+            upperFill.style.height = `${volumes.upper}%`;
+            lowerFill.style.height = `${volumes.lower}%`;
+
+            // 更新百分比状态
+            upperSandPercent = volumes.upper;
+            lowerSandPercent = volumes.lower;
+
+            // 更新状态提示
+            if (upperSandPercent > 70) {
+                statusEl.textContent = "沙漏刚开始流动...";
+                statusEl.style.color = "var(--primary)";
+            } else if (upperSandPercent > 30) {
+                statusEl.textContent = "沙漏稳定流动中";
+                statusEl.style.color = "var(--secondary)";
+            } else if (upperSandPercent > 5) {
+                statusEl.textContent = "沙子快流完了...";
+                statusEl.style.color = "#ff6b6b";
+            } else if (upperSandPercent <= 5 && upperSandPercent > 0) {
+                statusEl.textContent = "沙子即将流完，准备翻转！";
+                statusEl.style.color = "#ff5252";
+            } else {
+                statusEl.textContent = "沙漏已空，即将翻转...";
+                statusEl.style.color = "#ff5252";
+            }
+
+            // 如果上层沙子漏完（<1%），触发自动翻转
+            if (upperSandPercent < 1 && !isFlipping && !flipTimeout) {
+                flipTimeout = setTimeout(() => {
+                    autoFlip();
+                    flipTimeout = null;
+                }, 1000);
+            }
+
+            // 更新时间显示
+            updateTimeDisplay();
+        }
+
+        // 更新时间显示
+        function updateTimeDisplay() {
+            const startDate = Storage.getStartDate();
+            if (!startDate) return;
+
+            const diff = Date.now() - new Date(startDate);
+            const days = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+
+            document.getElementById('days').textContent = days;
+            document.getElementById('hours').textContent = hours;
+            document.getElementById('minutes').textContent = minutes;
+            document.getElementById('seconds').textContent = seconds;
+        }
+
+        // 创建下落沙粒
+        function createFallingGrains() {
+            if (isFlipping || upperSandPercent <= 0) return;
+
+            const container = document.getElementById('falling-sands');
+            if (!container) return;
+
+            // 清空现有沙粒
+            container.innerHTML = '';
+
+            // 根据沙子流速创建沙粒数量（流速越快，沙粒越多）
+            const grainCount = Math.floor(upperSandPercent / 20) + 3;
+
+            for (let i = 0; i < grainCount; i++) {
+                const grain = document.createElement('div');
+                grain.className = 'grain';
+                grain.style.left = (Math.random() * 10 - 5) + 'px';
+                grain.style.animationDelay = (Math.random() * 0.5) + 's';
+                grain.style.animationDuration = (0.5 + Math.random() * 0.4) + 's';
+                grain.style.setProperty('--drift', (Math.random() * 6 - 3) + 'px');
+                container.appendChild(grain);
+            }
+        }
+
+        // 自动翻转沙漏
+        function autoFlip() {
+            if (isFlipping) return;
+
+            isFlipping = true;
+            flipCount++;
+            const hourglass = document.getElementById('hourglass');
+            const statusEl = document.getElementById('hourglass-status');
+
+            hourglass.classList.add('flipping');
+            statusEl.textContent = `沙漏翻转中... (第${flipCount}次翻转)`;
+            statusEl.style.color = "var(--primary)";
+
+            // 翻转动画完成时交换沙子
+            setTimeout(() => {
+                // 交换上下沙子
+                upperSandPercent = 100;
+                lowerSandPercent = 0;
+
+                const upperFill = document.getElementById('upper-sand-fill');
+                const lowerFill = document.getElementById('lower-sand-fill');
+
+                upperFill.style.height = '100%';
+                lowerFill.style.height = '0%';
+
+                // 结束翻转状态
+                setTimeout(() => {
+                    hourglass.classList.remove('flipping');
+                    isFlipping = false;
+                    statusEl.textContent = "沙漏重新开始流动...";
+
+                    // 重新开始沙粒动画
+                    createFallingGrains();
+                }, 300);
+            }, 600);
+        }
+
+        // 手动翻转
+        function manualFlip() {
+            if (isFlipping) return;
+            autoFlip();
+        }
+
+        // 设置恋爱开始日期
+        function setStartDate(date) {
+            if (!date) return;
+            Storage.setStartDate(date);
+            alert('恋爱开始时间已设置！沙漏开始流动 💕\n\n快去首页看看效果吧~');
+
+            // 重置沙漏
+            upperSandPercent = 100;
+            lowerSandPercent = 0;
+            flipCount = 0;
+
+            const upperFill = document.getElementById('upper-sand-fill');
+            const lowerFill = document.getElementById('lower-sand-fill');
+
+            upperFill.style.height = '100%';
+            lowerFill.style.height = '0%';
+
+            // 重新计算翻转时长
+            calculateFlipDuration();
+
+            updateHourglassDisplay();
+        }
+
+        /**
+         * 系统初始化
+         */
+        // 恢复保存的日期
+        const savedDate = Storage.getStartDate();
+        if (savedDate) {
+            document.getElementById('start-date').value = savedDate;
+        }
+
+        // 定时更新（100ms一次，保证流畅）
+        setInterval(() => {
+            updateHomeTimer();
+            // 只在沙漏页面时更新沙漏（优化性能）
+            if (document.getElementById('page-hourglass').classList.contains('active')) {
+                updateHourglassDisplay();
+            }
+        }, 100);
+
+        // 初始化沙漏
+        initHourglass();
+
+        // 启动首页
+        startBubbles();
+        updateHomeTimer();
+
+        // 页面可见性变化时暂停/恢复动画（节省资源）
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopBubbles();
+            } else if (document.getElementById('page-home').classList.contains('active')) {
+                startBubbles();
+            }
+        });
+    </script>
+</body>
+</html>
